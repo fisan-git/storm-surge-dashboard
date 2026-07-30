@@ -126,7 +126,7 @@ Components:
 ## 🚀 Usage
 
 ### Online Access
-Visit the deployed dashboard: **https://jl8ynu1c.scispace.co**
+Visit the deployed dashboard: **https://fisan-git.github.io/storm-surge-dashboard/**
 
 ### Local Development
 1. Clone or download the repository
