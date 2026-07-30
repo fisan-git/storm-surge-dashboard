@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interactive GIS Dashboard for Storm Surge Risk Visualization and Vulnerability Assessment in Low-Lying Coastal Areas">
+    <meta property="og:title" content="Storm Surge Risk GIS Dashboard">
+    <meta property="og:description" content="Analyze and visualize storm surge vulnerability in coastal regions with interactive mapping tools">
+    <meta property="og:type" content="website">
+    <title>Storm Surge Risk GIS Dashboard | Coastal Vulnerability Analysis</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ocean: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        surge: {
+                            low: '#fef3c7',
+                            medium: '#fbbf24',
+                            high: '#f97316',
+                            extreme: '#dc2626',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-ocean-700 to-ocean-900 text-white shadow-lg">
+        <nav class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div>
+                        <h1 class="text-2xl font-bold">Storm Surge Risk Dashboard</h1>
+                        <p class="text-sm text-ocean-200">GIS-Based Coastal Vulnerability Analysis</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex space-x-6">
+                    <a href="#map" class="hover:text-ocean-200 transition">Map</a>
+                    <a href="#assessment" class="hover:text-ocean-200 transition">Risk Assessment</a>
+                    <a href="#analytics" class="hover:text-ocean-200 transition">Analytics</a>
+                    <a href="#resources" class="hover:text-ocean-200 transition">Resources</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-b from-ocean-50 to-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto text-center">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Interactive Storm Surge Vulnerability Analysis</h2>
+                <p class="text-xl text-gray-600 mb-8">Analyze coastal flood risk, assess vulnerability, and visualize storm surge impacts using advanced GIS technology</p>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                    <div class="bg-white rounded-lg shadow-md p-4">
+                        <div class="text-3xl font-bold text-ocean-600" id="locations-count">250+</div>
+                        <div class="text-sm text-gray-600">Coastal Locations</div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-4">
+                        <div class="text-3xl font-bold text-orange-600" id="risk-areas">1.2M</div>
+                        <div class="text-sm text-gray-600">People at Risk</div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-4">
+                        <div class="text-3xl font-bold text-red-600" id="surge-height">5.8m</div>
+                        <div class="text-sm text-gray-600">Max Surge Height</div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-4">
+                        <div class="text-3xl font-bold text-green-600" id="studies">136</div>
+                        <div class="text-sm text-gray-600">Research Studies</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        
+        <!-- Interactive Map Section -->
+        <section id="map" class="mb-12">
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="bg-ocean-600 text-white px-6 py-4">
+                    <h3 class="text-2xl font-bold flex items-center">
+                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                        </svg>
+                        Interactive Storm Surge Risk Map
+                    </h3>
+                    <p class="text-ocean-100 text-sm mt-1">Click on markers to view detailed vulnerability assessments</p>
+                </div>
+                
+                <!-- Map Controls -->
+                <div class="bg-gray-50 px-6 py-4 border-b">
+                    <div class="flex flex-wrap gap-4 items-center">
+                        <div class="flex items-center space-x-2">
+                            <label class="text-sm font-medium text-gray-700">Scenario:</label>
+                            <select id="scenario-select" class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-ocean-500">
+                                <option value="current">Current Conditions</option>
+                                <option value="slr-2050">Sea Level Rise 2050</option>
+                                <option value="slr-2100">Sea Level Rise 2100</option>
+                                <option value="cat3">Category 3 Hurricane</option>
+                                <option value="cat5">Category 5 Hurricane</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <label class="text-sm font-medium text-gray-700">Risk Layer:</label>
+                            <select id="layer-select" class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-ocean-500">
+                                <option value="vulnerability">Vulnerability Index</option>
+                                <option value="inundation">Inundation Depth</option>
+                                <option value="population">Population Exposure</option>
+                                <option value="infrastructure">Infrastructure Risk</option>
+                            </select>
+                        </div>
+                        <button id="toggle-heatmap" class="bg-ocean-600 text-white px-4 py-2 rounded-md text-sm hover:bg-ocean-700 transition">
+                            Toggle Heatmap
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Map Container -->
+                <div id="map-container" class="relative" style="height: 600px;">
+                    <div id="map-loading" class="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10">
+                        <div class="text-center">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-ocean-600 mx-auto mb-4"></div>
+                            <p class="text-gray-600">Loading map data...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Legend -->
+                <div class="bg-gray-50 px-6 py-4 border-t">
+                    <h4 class="text-sm font-semibold text-gray-700 mb-2">Risk Level Legend</h4>
+                    <div class="flex flex-wrap gap-4">
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-green-500 rounded mr-2"></div>
+                            <span class="text-sm text-gray-600">Low Risk (0-25%)</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-yellow-500 rounded mr-2"></div>
+                            <span class="text-sm text-gray-600">Moderate Risk (25-50%)</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-orange-500 rounded mr-2"></div>
+                            <span class="text-sm text-gray-600">High Risk (50-75%)</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-red-600 rounded mr-2"></div>
+                            <span class="text-sm text-gray-600">Extreme Risk (75-100%)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Risk Assessment Tools -->
+        <section id="assessment" class="mb-12">
+            <h3 class="text-3xl font-bold text-gray-900 mb-6">Storm Surge Risk Assessment Tools</h3>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Vulnerability Calculator -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h4 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-ocean-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        </svg>
+                        Coastal Vulnerability Calculator
+                    </h4>
+                    
+                    <form id="vulnerability-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Elevation (meters above sea level)</label>
+                            <input type="number" id="elevation" step="0.1" value="2.0" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-ocean-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Distance from Coast (km)</label>
+                            <input type="number" id="distance" step="0.1" value="0.5" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-ocean-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Population Density (per km²)</label>
+                            <input type="number" id="population" value="5000" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-ocean-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Coastal Protection Level</label>
+                            <select id="protection" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-ocean-500">
+                                <option value="none">No Protection</option>
+                                <option value="low">Low (Natural barriers)</option>
+                                <option value="medium">Medium (Seawalls/Levees)</option>
+                                <option value="high">High (Integrated system)</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Storm Category</label>
+                            <select id="storm-category" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-ocean-500">
+                                <option value="1">Category 1 (1.2-1.5m surge)</option>
+                                <option value="2">Category 2 (1.8-2.4m surge)</option>
+                                <option value="3" selected>Category 3 (2.7-3.7m surge)</option>
+                                <option value="4">Category 4 (4.0-5.5m surge)</option>
+                                <option value="5">Category 5 (5.5m+ surge)</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-ocean-600 text-white py-3 rounded-md font-semibold hover:bg-ocean-700 transition">
+                            Calculate Vulnerability Index
+                        </button>
+                    </form>
+                    
+                    <div id="vulnerability-result" class="mt-6 p-4 bg-gray-50 rounded-md hidden">
+                        <h5 class="font-semibold text-gray-900 mb-2">Assessment Results:</h5>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Vulnerability Index:</span>
+                                <span id="vi-score" class="font-bold text-lg"></span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-3">
+                                <div id="vi-bar" class="h-3 rounded-full transition-all duration-500"></div>
+                            </div>
+                            <div id="vi-interpretation" class="text-sm mt-2"></div>
+                            <div class="mt-4 pt-4 border-t">
+                                <p class="text-sm font-medium text-gray-700 mb-2">Risk Factors:</p>
+                                <ul id="risk-factors" class="text-sm text-gray-600 space-y-1"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Inundation Estimator -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h4 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-ocean-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        </svg>
+                        Storm Surge Inundation Estimator
+                    </h4>
+                    
+                    <div class="space-y-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Expected Surge Height (m)</label>
+                            <input type="range" id="surge-height" min="0" max="10" step="0.1" value="3.0" class="w-full">
+                            <div class="flex justify-between text-sm text-gray-600 mt-1">
+                                <span>0m</span>
+                                <span id="surge-value" class="font-semibold text-ocean-600">3.0m</span>
+                                <span>10m</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Sea Level Rise Scenario (by 2100)</label>
+                            <input type="range" id="slr-scenario" min="0" max="2" step="0.1" value="0.5" class="w-full">
+                            <div class="flex justify-between text-sm text-gray-600 mt-1">
+                                <span>0m</span>
+                                <span id="slr-value" class="font-semibold text-ocean-600">0.5m</span>
+                                <span>2m</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Terrain Slope</label>
+                            <select id="terrain-slope" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                                <option value="flat">Flat (0-2°)</option>
+                                <option value="gentle" selected>Gentle (2-5°)</option>
+                                <option value="moderate">Moderate (5-10°)</option>
+                                <option value="steep">Steep (>10°)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-b from-ocean-50 to-ocean-100 rounded-lg p-6">
+                        <h5 class="font-semibold text-gray-900 mb-4">Estimated Impact Zone</h5>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="bg-white rounded-lg p-4 text-center">
+                                <div class="text-2xl font-bold text-ocean-600" id="inundation-distance">1.2 km</div>
+                                <div class="text-xs text-gray-600">Inland Reach</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 text-center">
+                                <div class="text-2xl font-bold text-orange-600" id="affected-area">15.8 km²</div>
+                                <div class="text-xs text-gray-600">Affected Area</div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-700">Residential Areas</span>
+                                    <span id="residential-impact" class="font-semibold text-red-600">High Risk</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div id="residential-bar" class="bg-red-600 h-2 rounded-full" style="width: 75%"></div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-700">Critical Infrastructure</span>
+                                    <span id="infrastructure-impact" class="font-semibold text-orange-600">Moderate Risk</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div id="infrastructure-bar" class="bg-orange-600 h-2 rounded-full" style="width: 55%"></div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-700">Agricultural Land</span>
+                                    <span id="agricultural-impact" class="font-semibold text-yellow-600">Low-Moderate Risk</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div id="agricultural-bar" class="bg-yellow-600 h-2 rounded-full" style="width: 40%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 p-3 bg-white rounded border-l-4 border-ocean-600">
+                            <p class="text-sm text-gray-700" id="inundation-note">
+                                Based on current parameters, storm surge could reach <span class="font-semibold">1.2 km inland</span> affecting approximately <span class="font-semibold">45,000 residents</span>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analytics Dashboard -->
+        <section id="analytics" class="mb-12">
+            <h3 class="text-3xl font-bold text-gray-900 mb-6">Vulnerability Analytics & Trends</h3>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <!-- Chart 1: Vulnerability by Region -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h4 class="text-lg font-bold text-gray-900 mb-4">Vulnerability Index by Coastal Region</h4>
+                    <div style="max-height: 300px;">
+                        <canvas id="vulnerability-chart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Chart 2: Population Exposure -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h4 class="text-lg font-bold text-gray-900 mb-4">Population Exposure Over Time</h4>
+                    <div style="max-height: 300px;">
+                        <canvas id="population-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Chart 3: Storm Surge Frequency -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h4 class="text-lg font-bold text-gray-900 mb-4">Historical Storm Surge Events</h4>
+                    <div style="max-height: 300px;">
+                        <canvas id="frequency-chart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Chart 4: Economic Impact -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h4 class="text-lg font-bold text-gray-900 mb-4">Projected Economic Impact (USD Billions)</h4>
+                    <div style="max-height: 300px;">
+                        <canvas id="economic-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- GIS Methodologies -->
+        <section id="resources" class="mb-12">
+            <h3 class="text-3xl font-bold text-gray-900 mb-6">GIS Methodologies & Resources</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Methodology Cards -->
+                <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition">
+                    <div class="w-12 h-12 bg-ocean-100 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-ocean-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                        </svg>
+                    </div>
+                    <h4 class="text-lg font-bold text-gray-900 mb-2">Spatial Analysis</h4>
+                    <p class="text-sm text-gray-600 mb-4">Overlay analysis, buffer zones, and proximity assessment for identifying vulnerable areas</p>
+                    <ul class="text-xs text-gray-500 space-y-1">
+                        <li>• Multi-criteria overlay analysis</li>
+                        <li>• Digital Elevation Model (DEM) analysis</li>
+                        <li>• Coastal zone delineation</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
+                        </svg>
+                    </div>
+                    <h4 class="text-lg font-bold text-gray-900 mb-2">Remote Sensing Integration</h4>
+                    <p class="text-sm text-gray-600 mb-4">Satellite imagery and LiDAR data for high-resolution terrain modeling</p>
+                    <ul class="text-xs text-gray-500 space-y-1">
+                        <li>• Sentinel-2 & Landsat imagery</li>
+                        <li>• LiDAR-derived elevation data</li>
+                        <li>• Change detection analysis</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                    <h4 class="text-lg font-bold text-gray-900 mb-2">Hydrodynamic Modeling</h4>
+                    <p class="text-sm text-gray-600 mb-4">Integration with ADCIRC, SLOSH, and other surge models</p>
+                    <ul class="text-xs text-gray-500 space-y-1">
+                        <li>• Storm surge simulation</li>
+                        <li>• Wave action modeling</li>
+                        <li>• Inundation depth mapping</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                        </svg>
+                    </div>
+                    <h4 class="text-lg font-bold text-gray-900 mb-2">Multi-Criteria Analysis</h4>
+                    <p class="text-sm text-gray-600 mb-4">AHP and weighted overlay for comprehensive risk assessment</p>
+                    <ul class="text-xs text-gray-500 space-y-1">
+                        <li>• Analytical Hierarchy Process (AHP)</li>
+                        <li>• Weighted overlay analysis</li>
+                        <li>• Sensitivity analysis</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition">
+                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                    </div>
+                    <h4 class="text-lg font-bold text-gray-900 mb-2">Social Vulnerability Index</h4>
+                    <p class="text-sm text-gray-600 mb-4">Demographic and socioeconomic vulnerability assessment</p>
+                    <ul class="text-xs text-gray-500 space-y-1">
+                        <li>• Census data integration</li>
+                        <li>• SoVI methodology</li>
+                        <li>• Community resilience metrics</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition">
+                    <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                    </div>
+                    <h4 class="text-lg font-bold text-gray-900 mb-2">Machine Learning Integration</h4>
+                    <p class="text-sm text-gray-600 mb-4">AI-enhanced prediction and pattern recognition</p>
+                    <ul class="text-xs text-gray-500 space-y-1">
+                        <li>• Random Forest classification</li>
+                        <li>• Neural network predictions</li>
+                        <li>• Automated feature extraction</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Data Sources & Software -->
+        <section class="mb-12">
+            <h3 class="text-3xl font-bold text-gray-900 mb-6">Data Sources & Software Tools</h3>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Data Sources -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h4 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-ocean-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+                        </svg>
+                        Key Data Sources
+                    </h4>
+                    <div class="space-y-3">
+                        <div class="flex items-start">
+                            <div class="w-2 h-2 bg-ocean-600 rounded-full mt-2 mr-3"></div>
+                            <div>
+                                <p class="font-semibold text-gray-900">NOAA Sea Level Rise Viewer</p>
+                                <p class="text-sm text-gray-600">Storm surge and sea level rise scenarios</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-2 h-2 bg-ocean-600 rounded-full mt-2 mr-3"></div>
+                            <div>
+                                <p class="font-semibold text-gray-900">USGS Elevation Data (3DEP)</p>
+                                <p class="text-sm text-gray-600">High-resolution digital elevation models</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-2 h-2 bg-ocean-600 rounded-full mt-2 mr-3"></div>
+                            <div>
+                                <p class="font-semibold text-gray-900">NASA Earth Observations</p>
+                                <p class="text-sm text-gray-600">Satellite imagery and climate data</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-2 h-2 bg-ocean-600 rounded-full mt-2 mr-3"></div>
+                            <div>
+                                <p class="font-semibold text-gray-900">OpenStreetMap</p>
+                                <p class="text-sm text-gray-600">Infrastructure and building footprints</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-2 h-2 bg-ocean-600 rounded-full mt-2 mr-3"></div>
+                            <div>
+                                <p class="font-semibold text-gray-900">WorldPop / LandScan</p>
+                                <p class="text-sm text-gray-600">Population distribution datasets</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Software Tools -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h4 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-ocean-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                        </svg>
+                        GIS Software Platforms
+                    </h4>
+                    <div class="space-y-3">
+                        <div class="flex items-start">
+                            <div class="w-2 h-2 bg-green-600 rounded-full mt-2 mr-3"></div>
+                            <div>
+                                <p class="font-semibold text-gray-900">ArcGIS Pro / ArcMap</p>
+                                <p class="text-sm text-gray-600">Industry-standard commercial GIS platform</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-2 h-2 bg-green-600 rounded-full mt-2 mr-3"></div>
+                            <div>
+                                <p class="font-semibold text-gray-900">QGIS</p>
+                                <p class="text-sm text-gray-600">Open-source GIS with extensive plugins</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-2 h-2 bg-green-600 rounded-full mt-2 mr-3"></div>
+                            <div>
+                                <p class="font-semibold text-gray-900">Google Earth Engine</p>
+                                <p class="text-sm text-gray-600">Cloud-based geospatial analysis platform</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-2 h-2 bg-green-600 rounded-full mt-2 mr-3"></div>
+                            <div>
+                                <p class="font-semibold text-gray-900">Python (GeoPandas, Rasterio)</p>
+                                <p class="text-sm text-gray-600">Programming libraries for spatial analysis</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-2 h-2 bg-green-600 rounded-full mt-2 mr-3"></div>
+                            <div>
+                                <p class="font-semibold text-gray-900">R (sf, raster, tmap)</p>
+                                <p class="text-sm text-gray-600">Statistical computing with spatial packages</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Case Studies -->
+        <section class="mb-12">
+            <h3 class="text-3xl font-bold text-gray-900 mb-6">Featured Case Studies</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition">
+                    <div class="h-48 bg-gradient-to-br from-ocean-400 to-ocean-600"></div>
+                    <div class="p-6">
+                        <h4 class="text-lg font-bold text-gray-900 mb-2">Gulf of Mexico Coast</h4>
+                        <p class="text-sm text-gray-600 mb-4">Multi-criteria GIS assessment of vulnerable communities in Louisiana and Texas coastal zones</p>
+                        <div class="flex items-center text-sm text-ocean-600">
+                            <span class="font-semibold">136 papers analyzed</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition">
+                    <div class="h-48 bg-gradient-to-br from-green-400 to-green-600"></div>
+                    <div class="p-6">
+                        <h4 class="text-lg font-bold text-gray-900 mb-2">Small Island States</h4>
+                        <p class="text-sm text-gray-600 mb-4">GIS-based vulnerability assessment in Kiribati, Maldives, and Caribbean islands</p>
+                        <div class="flex items-center text-sm text-green-600">
+                            <span class="font-semibold">Remote sensing integration</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition">
+                    <div class="h-48 bg-gradient-to-br from-purple-400 to-purple-600"></div>
+                    <div class="p-6">
+                        <h4 class="text-lg font-bold text-gray-900 mb-2">Southeast Asian Coasts</h4>
+                        <p class="text-sm text-gray-600 mb-4">Compound flood risk modeling in Indonesia and Philippines using GIS and hydrodynamic models</p>
+                        <div class="flex items-center text-sm text-purple-600">
+                            <span class="font-semibold">Machine learning enhanced</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-300 py-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
+                <div>
+                    <h5 class="text-white font-bold mb-3">About This Dashboard</h5>
+                    <p class="text-sm">An interactive GIS-based platform for analyzing storm surge vulnerability in low-lying coastal areas, built on peer-reviewed research and advanced spatial analysis methodologies.</p>
+                </div>
+                <div>
+                    <h5 class="text-white font-bold mb-3">Data & Methods</h5>
+                    <ul class="text-sm space-y-2">
+                        <li>• Based on 136 peer-reviewed studies</li>
+                        <li>• Multi-criteria spatial analysis</li>
+                        <li>• Remote sensing integration</li>
+                        <li>• Real-time scenario modeling</li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-white font-bold mb-3">Disclaimer</h5>
+                    <p class="text-sm">This tool provides educational estimates based on research literature. For official risk assessments, consult local emergency management authorities and NOAA.</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-6 text-center text-sm">
+                <p>&copy; 2026 Storm Surge Risk Dashboard. Data sources: NOAA, USGS, NASA, OpenStreetMap. Built with Leaflet.js and Chart.js.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Custom Scripts -->
+    <script src="js/map.js"></script>
+    <script src="js/calculator.js"></script>
+    <script src="js/charts.js"></script>
+</body>
+<<<<<<< HEAD
+</html>
+=======
+</html>
+>>>>>>> 953dcc6b599c72e06afc32457b99f49219cf8321
