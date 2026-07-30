@@ -266,4 +266,4 @@ Version 1.0 (January 2026)
 
 **Built with research, designed for resilience.**
 
-For the latest updates and additional resources, visit the live dashboard at: https://jl8ynu1c.scispace.co
+For the latest updates and additional resources, visit the live dashboard at: **https://fisan-git.github.io/storm-surge-dashboard/**
